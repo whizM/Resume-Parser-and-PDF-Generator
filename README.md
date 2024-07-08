@@ -29,15 +29,15 @@ These instructions will get you a copy of the project up and running on your loc
    pip install -r requirements.txt
 
 ## Usage
-   -To run the application locally:
+   - To run the application locally:
       ```bash
       streamlit run streamlit_app.py
-   -Open your web browser and navigate to http://localhost:8501 to start using the Resume Parser and PDF Generator.
+   - Open your web browser and navigate to http://localhost:8501 to start using the Resume Parser and PDF Generator.
 
 ## Contributing
 Contributions are what make the open-source community such a powerful platform for learning, inspiring, and creating. Any contributions you make are greatly appreciated.
 
 ## Contact
-   -Gmail: kushalpatel0265@gmail.com
-   -Project Link: https://github.com/kushalpatel0265/Resume-Parser-and-PDF-Generator
-   -Deployment Link: https://resumeparsingandpdfgenerator.streamlit.app/
+- Gmail: kushalpatel0265@gmail.com
+- Project Link: https://github.com/kushalpatel0265/Resume-Parser-and-PDF-Generator
+- Deployment Link: https://resumeparsingandpdfgenerator.streamlit.app/
