@@ -38,6 +38,6 @@ These instructions will get you a copy of the project up and running on your loc
 Contributions are what make the open-source community such a powerful platform for learning, inspiring, and creating. Any contributions you make are greatly appreciated.
 
 ## Contact
--Gmail: kushalpatel0265@gmail.com
--Project Link: https://github.com/kushalpatel0265/Resume-Parser-and-PDF-Generator
--Deployment Link: https://resumeparsingandpdfgenerator.streamlit.app/
+   -Gmail: kushalpatel0265@gmail.com
+   -Project Link: https://github.com/kushalpatel0265/Resume-Parser-and-PDF-Generator
+   -Deployment Link: https://resumeparsingandpdfgenerator.streamlit.app/
