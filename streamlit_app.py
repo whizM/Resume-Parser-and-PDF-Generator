@@ -1,151 +1,139 @@
 import streamlit as st
-import pandas as pd
-import math
-from pathlib import Path
+import re
+import tempfile
+from PyPDF2 import PdfReader
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
 
-# Set the title and favicon that appear in the Browser's tab bar.
-st.set_page_config(
-    page_title='GDP dashboard',
-    page_icon=':earth_americas:', # This is an emoji shortcode. Could be a URL too.
-)
+def extract_text_from_pdf(uploaded_file):
+    text = ""
+    try:
+        reader = PdfReader(uploaded_file)
+        for page in reader.pages:
+            text += page.extract_text()
+    except Exception as e:
+        st.error(f"Error reading PDF file: {e}")
+    return text
 
-# -----------------------------------------------------------------------------
-# Declare some useful functions.
+def extract_name(text):
+    match = re.search(r'^[^\n]+', text)
+    return match.group() if match else ""
 
-@st.cache_data
-def get_gdp_data():
-    """Grab GDP data from a CSV file.
+def extract_skills(text):
+    pattern = re.compile(r'(?:Skills|Technologies|Tools):?\s*(.*?)(?:Experience|Education|Projects|Hackathons|Achievements|$)', re.IGNORECASE | re.DOTALL)
+    match = pattern.search(text)
+    return match.group(1).strip() if match else ""
 
-    This uses caching to avoid having to read the file every time. If we were
-    reading from an HTTP endpoint instead of a file, it's a good idea to set
-    a maximum age to the cache with the TTL argument: @st.cache_data(ttl='1d')
-    """
+def extract_experience(text):
+    pattern = re.compile(r'Experience:?\s*(.*?)(?:Education|Projects|Hackathons|Achievements|$)', re.IGNORECASE | re.DOTALL)
+    match = pattern.search(text)
+    return match.group(1).strip() if match else ""
 
-    # Instead of a CSV on disk, you could read from an HTTP endpoint here too.
-    DATA_FILENAME = Path(__file__).parent/'data/gdp_data.csv'
-    raw_gdp_df = pd.read_csv(DATA_FILENAME)
+def extract_education(text):
+    pattern = re.compile(r'Education:?\s*(.*?)(?:Projects|Hackathons|Achievements|$)', re.IGNORECASE | re.DOTALL)
+    match = pattern.search(text)
+    return match.group(1).strip() if match else ""
 
-    MIN_YEAR = 1960
-    MAX_YEAR = 2022
+def extract_projects(text):
+    pattern = re.compile(r'Projects:?\s*(.*?)(?:Hackathons|Achievements|Skills|$)', re.IGNORECASE | re.DOTALL)
+    match = pattern.search(text)
+    return match.group(1).strip() if match else ""
 
-    # The data above has columns like:
-    # - Country Name
-    # - Country Code
-    # - [Stuff I don't care about]
-    # - GDP for 1960
-    # - GDP for 1961
-    # - GDP for 1962
-    # - ...
-    # - GDP for 2022
-    #
-    # ...but I want this instead:
-    # - Country Name
-    # - Country Code
-    # - Year
-    # - GDP
-    #
-    # So let's pivot all those year-columns into two: Year and GDP
-    gdp_df = raw_gdp_df.melt(
-        ['Country Code'],
-        [str(x) for x in range(MIN_YEAR, MAX_YEAR + 1)],
-        'Year',
-        'GDP',
-    )
+def extract_hackathons(text):
+    pattern = re.compile(r'Hackathons:?\s*(.*?)(?:Achievements|$)', re.IGNORECASE | re.DOTALL)
+    match = pattern.search(text)
+    return match.group(1).strip() if match else ""
 
-    # Convert years from string to integers
-    gdp_df['Year'] = pd.to_numeric(gdp_df['Year'])
+def extract_achievements(text):
+    pattern = re.compile(r'Achievements:?\s*(.*?)(?:Education|Projects|Hackathons|Work|Languages|$)', re.IGNORECASE | re.DOTALL)
+    match = pattern.search(text)
+    return match.group(1).strip() if match else ""
 
-    return gdp_df
+def create_resume_pdf(name, skills, experience, achievements, education, hackathons, projects, filename):
+    doc = SimpleDocTemplate(filename, pagesize=letter)
+    styles = getSampleStyleSheet()
 
-gdp_df = get_gdp_data()
+    content = []
 
-# -----------------------------------------------------------------------------
-# Draw the actual page
+    content.append(Paragraph("Professional Resume", styles['Title']))
+    content.append(Spacer(1, 12))
 
-# Set the title that appears at the top of the page.
-'''
-# :earth_americas: GDP dashboard
+    if name:
+        content.append(Paragraph("Name:", styles['Heading2']))
+        content.append(Paragraph(name, styles['Normal']))
+        content.append(Spacer(1, 12))
 
-Browse GDP data from the [World Bank Open Data](https://data.worldbank.org/) website. As you'll
-notice, the data only goes to 2022 right now, and datapoints for certain years are often missing.
-But it's otherwise a great (and did I mention _free_?) source of data.
-'''
+    if skills:
+        content.append(Paragraph("Skills:", styles['Heading2']))
+        content.append(Paragraph(skills, styles['Normal']))
+        content.append(Spacer(1, 12))
 
-# Add some spacing
-''
-''
+    if experience:
+        content.append(Paragraph("Experience:", styles['Heading2']))
+        content.append(Paragraph(experience, styles['Normal']))
+        content.append(Spacer(1, 12))
 
-min_value = gdp_df['Year'].min()
-max_value = gdp_df['Year'].max()
+    if achievements:
+        content.append(Paragraph("Achievements:", styles['Heading2']))
+        content.append(Paragraph(achievements, styles['Normal']))
+        content.append(Spacer(1, 12))
 
-from_year, to_year = st.slider(
-    'Which years are you interested in?',
-    min_value=min_value,
-    max_value=max_value,
-    value=[min_value, max_value])
+    if education:
+        content.append(Paragraph("Education:", styles['Heading2']))
+        content.append(Paragraph(education, styles['Normal']))
+        content.append(Spacer(1, 12))
 
-countries = gdp_df['Country Code'].unique()
+    if hackathons:
+        content.append(Paragraph("Hackathons:", styles['Heading2']))
+        content.append(Paragraph(hackathons, styles['Normal']))
+        content.append(Spacer(1, 12))
 
-if not len(countries):
-    st.warning("Select at least one country")
+    if projects:
+        content.append(Paragraph("Projects:", styles['Heading2']))
+        content.append(Paragraph(projects, styles['Normal']))
+        content.append(Spacer(1, 12))
 
-selected_countries = st.multiselect(
-    'Which countries would you like to view?',
-    countries,
-    ['DEU', 'FRA', 'GBR', 'BRA', 'MEX', 'JPN'])
+    doc.build(content)
 
-''
-''
-''
+# Streamlit frontend
+st.title("Resume Parser and PDF Generator")
 
-# Filter the data
-filtered_gdp_df = gdp_df[
-    (gdp_df['Country Code'].isin(selected_countries))
-    & (gdp_df['Year'] <= to_year)
-    & (from_year <= gdp_df['Year'])
-]
+uploaded_file = st.file_uploader("Upload your resume (PDF format)", type="pdf")
 
-st.header('GDP over time', divider='gray')
+if uploaded_file is not None:
+    resume_text = extract_text_from_pdf(uploaded_file)
+    if resume_text:
+        name = extract_name(resume_text)
+        skills = extract_skills(resume_text)
+        experience = extract_experience(resume_text)
+        education = extract_education(resume_text)
+        projects = extract_projects(resume_text)
+        hackathons = extract_hackathons(resume_text)
+        achievements = extract_achievements(resume_text)
 
-''
+        st.write(" ")
+        st.write(f"**Resume of:** {name} ")
+        st.write(" ")
+        st.write(f"**Name:** {name}")
+        st.write(f"**Skills:** {skills}")
+        st.write(f"**Experience:** {experience}")
+        st.write(f"**Achievements:** {achievements}")
+        st.write(f"**Education:** {education}")
+        st.write(f"**Hackathons:** {hackathons}")
+        st.write(f"**Projects:** {projects}")
+        st.write(" ")
 
-st.line_chart(
-    filtered_gdp_df,
-    x='Year',
-    y='GDP',
-    color='Country Code',
-)
-
-''
-''
-
-
-first_year = gdp_df[gdp_df['Year'] == from_year]
-last_year = gdp_df[gdp_df['Year'] == to_year]
-
-st.header(f'GDP in {to_year}', divider='gray')
-
-''
-
-cols = st.columns(4)
-
-for i, country in enumerate(selected_countries):
-    col = cols[i % len(cols)]
-
-    with col:
-        first_gdp = first_year[gdp_df['Country Code'] == country]['GDP'].iat[0] / 1000000000
-        last_gdp = last_year[gdp_df['Country Code'] == country]['GDP'].iat[0] / 1000000000
-
-        if math.isnan(first_gdp):
-            growth = 'n/a'
-            delta_color = 'off'
-        else:
-            growth = f'{last_gdp / first_gdp:,.2f}x'
-            delta_color = 'normal'
-
-        st.metric(
-            label=f'{country} GDP',
-            value=f'{last_gdp:,.0f}B',
-            delta=growth,
-            delta_color=delta_color
-        )
+        if st.button("Generate PDF"):
+            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                create_resume_pdf(name, skills, experience, achievements, education, hackathons, projects, tmp_file.name)
+                st.write(" ")
+                st.write("Click below to download the PDF:")
+                st.download_button(
+                    label="Download PDF",
+                    data=open(tmp_file.name, "rb").read(),
+                    file_name=f"{name}_resume.pdf",
+                    mime="application/pdf"
+                )
+    else:
+        st.error("No text could be extracted from the uploaded PDF.")
