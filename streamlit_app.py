@@ -137,3 +137,66 @@ if uploaded_file is not None:
                 )
     else:
         st.error("No text could be extracted from the uploaded PDF.")
+
+# Sample resume content
+sample_name = "Kushal Patel\nkushalpatel02656@gmail.com\nhttps://www.linkedin.com/in/kushalpatel0265\nhttps://github.com/kushalpatel0265"
+sample_skills = """- Programming Languages: Python, JavaScript, SQL, HTML, CSS
+- Tools & Technologies: Pandas, PandasAI, Azure AI Services, Git, Excel
+- Database Management: SQL Server, MySQL, PostgreSQL
+- Web Development: HTML, CSS, JavaScript, React.js
+- Data Analysis: Data Cleaning, Data Visualization, Machine Learning"""
+sample_experience = """*Intern, Data Analyst - [Company Name]*
+[Month, Year] - [Month, Year]
+- Analyzed and visualized data to provide actionable insights
+- Performed SQL queries to extract and manipulate data from databases
+- Assisted in the development of machine learning models for predictive analytics
+
+*Intern, Web Developer - [Company Name]*
+[Month, Year] - [Month, Year]
+- Designed and developed responsive web pages using HTML, CSS, and JavaScript
+- Collaborated with designers and backend developers to enhance user experience
+- Debugged and tested web applications to ensure functionality"""
+sample_achievements = """- Awarded the Best Intern of the Year at [Company Name]
+- Secured 1st place in the [Hackathon Name] for developing an innovative solution
+- Published a project on GitHub that received over 100 stars and forks"""
+sample_education = """*B.Tech in [Major], [Nirma University]*
+[Year] - [Expected Graduation Year]
+- Relevant coursework: Data Structures, Algorithms, Database Management Systems, Machine Learning
+
+*High School Diploma, [School Name]*
+[Year]
+- Achieved a GPA of [GPA]"""
+sample_hackathons = """*Hackathon Name - [Year]*
+- Developed a solution for [problem statement] using [technologies/tools]
+- Collaborated with a team of [number] members to create a working prototype in [timeframe]
+
+*Hackathon Name - [Year]*
+- Created an innovative [project name/idea] that addressed [specific issue]
+- Utilized [technologies/tools] to implement the solution"""
+sample_projects = """*Automated Job Recommendation, Interview, and Salary Prediction System*
+- Designed and implemented a system to recommend jobs, schedule interviews, and predict salaries using machine learning algorithms
+- Utilized PandasAI for data processing and analysis
+
+*Energy Consumption Optimization Project*
+- Analyzed and predicted energy usage patterns in buildings to optimize HVAC systems
+- Achieved a significant reduction in energy consumption without compromising comfort
+
+*Airport Management System*
+- Designed an ER diagram and transformed it into a relational model
+- Created SQL tables and executed complex queries to manage airport operations
+
+*Website Design Portfolio*
+- Developed multiple website templates using HTML, CSS, and JavaScript
+- Focused on creating responsive and user-friendly designs"""
+
+if st.button("Download Sample Resume"):
+    with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+        create_resume_pdf(sample_name, sample_skills, sample_experience, sample_achievements, sample_education, sample_hackathons, sample_projects, tmp_file.name)
+        st.write(" ")
+        st.write("Click below to download the sample resume PDF:")
+        st.download_button(
+            label="Download Sample Resume PDF",
+            data=open(tmp_file.name, "rb").read(),
+            file_name=f"Sample_Resume.pdf",
+            mime="application/pdf"
+        )
