@@ -132,7 +132,7 @@ if uploaded_file is not None:
                 st.download_button(
                     label="Download PDF",
                     data=open(tmp_file.name, "rb").read(),
-                    file_name=f"{name}_resume.pdf",
+                    file_name=f"Converted_Resume.pdf",
                     mime="application/pdf"
                 )
     else:
